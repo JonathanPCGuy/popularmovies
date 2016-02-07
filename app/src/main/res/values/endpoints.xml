@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="the_movie_api_endpoint">https://api.themoviedb.org/3/</string>
+</resources>

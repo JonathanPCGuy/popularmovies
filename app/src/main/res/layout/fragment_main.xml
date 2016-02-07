@@ -9,10 +9,6 @@
     tools:context="com.jonathanpcguy.popularmovies.MainActivityFragment"
     tools:showIn="@layout/activity_main">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        android:id="@+id/debug_text_view"/>
-
+    <ListView android:id="@+id/listview_movies" android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </RelativeLayout>
