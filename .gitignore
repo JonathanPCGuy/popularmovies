@@ -7,3 +7,6 @@
 /build
 /captures
 apikeys.gradle
+apikeys.properties
+# there has to be a better way to do this; for now will do this
+app/src/main/res/values/secrets.xml
