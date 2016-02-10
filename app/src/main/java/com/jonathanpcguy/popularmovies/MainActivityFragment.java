@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,7 +32,7 @@ public class MainActivityFragment extends Fragment {
     public MainActivityFragment() {
     }
 
-    private class FetchMoviesTask  extends AsyncTask<Void, Void, String[]> {
+    private class FetchMoviesTask  extends AsyncTask<Void, Void, ReturnedMovie[]> {
 
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
         private final String API_KEY = getString(R.string.the_movie_db_api_key);
@@ -47,26 +46,29 @@ public class MainActivityFragment extends Fragment {
          * @param jsonString
          * @return parsed movie data for display
          */
-        private String[] parseMovieData(String jsonString)
+        private ReturnedMovie[] parseMovieData(String jsonString)
             throws JSONException {
 
-            ArrayList<String> returnData = new ArrayList<String>();
+            ArrayList<ReturnedMovie> returnData = new ArrayList<ReturnedMovie>();
             JSONObject jsonObject = new JSONObject(jsonString);
             JSONArray movieArray = jsonObject.getJSONArray("results");
 
             for(int i = 0; i < movieArray.length(); i++) {
-                returnData.add(movieArray.getJSONObject(i).getString("title"));
+                JSONObject currentObject = movieArray.getJSONObject(i);
+                returnData.add(new ReturnedMovie(currentObject.getString("title"),
+                        currentObject.getString("poster_path"),
+                        currentObject.getInt("id")));
             }
 
-            return returnData.toArray(new String[returnData.size()]);
+            return returnData.toArray(new ReturnedMovie[returnData.size()]);
         }
 
         @Override
-        protected String[] doInBackground(Void... params) {
+        protected ReturnedMovie[] doInBackground(Void... params) {
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String returnData = null;
-            String[] returnedMovies = null;
+            ReturnedMovie[] returnedMovies = null;
 
             try {
                 // todo: make modular when query and sorting options changes
@@ -127,20 +129,22 @@ public class MainActivityFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(String[] strings) {
-            if(strings != null) {
-                mArrayAdapter.clear();
-                ArrayList<String> returnData = new ArrayList<String>(Arrays.asList(strings));
+        protected void onPostExecute(ReturnedMovie[] returnedMovies) {
+            if(returnedMovies != null) {
+                mMovieListAdapter.clear();
+                ArrayList<ReturnedMovie> returnData = new ArrayList<ReturnedMovie>(Arrays.asList(returnedMovies));
 
-                for(String s :returnData) {
-                    mArrayAdapter.add(s);
+                for(ReturnedMovie s :returnData) {
+                    mMovieListAdapter.add(s);
                 }
             }
-            super.onPostExecute(strings);
+            super.onPostExecute(returnedMovies);
         }
     }
 
-    ArrayAdapter<String> mArrayAdapter;
+    // todo: figure out how to update multiple fields with the adapter (i've done this before but i've forgotten)
+
+    MovieListAdapter mMovieListAdapter;
 
     private void GetMovieData() {
         FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
@@ -151,9 +155,9 @@ public class MainActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView =  inflater.inflate(R.layout.fragment_main, container, false);
-        mArrayAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_movie, R.id.list_item_movie_item);
+        mMovieListAdapter = new MovieListAdapter(getActivity(), R.layout.list_item_movie, R.id.list_item_movie_text_view);
         ListView listView = (ListView)rootView.findViewById(R.id.listview_movies);
-        listView.setAdapter(mArrayAdapter);
+        listView.setAdapter(mMovieListAdapter);
         GetMovieData();
         return rootView;
     }
