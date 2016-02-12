@@ -1,5 +1,6 @@
 package com.jonathanpcguy.popularmovies;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
@@ -8,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -55,9 +57,13 @@ public class MainActivityFragment extends Fragment {
 
             for(int i = 0; i < movieArray.length(); i++) {
                 JSONObject currentObject = movieArray.getJSONObject(i);
+                // is there a more elegant way to do this?
                 returnData.add(new ReturnedMovie(currentObject.getString("title"),
                         currentObject.getString("poster_path"),
-                        currentObject.getInt("id")));
+                        currentObject.getInt("id"),
+                        currentObject.getString("overview"),
+                        currentObject.getDouble("vote_average"),
+                        currentObject.getString("release_date")));
             }
 
             return returnData.toArray(new ReturnedMovie[returnData.size()]);
@@ -158,6 +164,21 @@ public class MainActivityFragment extends Fragment {
         mMovieListAdapter = new MovieListAdapter(getActivity(), R.layout.list_item_movie, R.id.list_item_movie_text_view);
         ListView listView = (ListView)rootView.findViewById(R.id.listview_movies);
         listView.setAdapter(mMovieListAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ReturnedMovie returnedMovie = mMovieListAdapter.getItem(position);
+
+                // todo: study how to shove a map
+                // later on we would just hit the local db;
+                Intent detailedIntent = new Intent(getActivity(), MovieDetailActivity.class)
+                        .putExtra(ReturnedMovie.BUNDLE_RETURNED_MOVE, returnedMovie.ToBundle());
+                startActivity(detailedIntent);
+
+            }
+        });
+
         GetMovieData();
         return rootView;
     }
